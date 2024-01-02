@@ -20,6 +20,9 @@ from common_code.common.models import FieldDescription, ExecutionUnitTag
 
 # Imports required by the service's model
 # TODO: 1. ADD REQUIRED IMPORTS (ALSO IN THE REQUIREMENTS.TXT)
+import os
+import json
+from model.Languages import Languages
 
 settings = get_settings()
 
@@ -27,73 +30,88 @@ settings = get_settings()
 class MyService(Service):
     # TODO: 2. CHANGE THIS DESCRIPTION
     """
-    My service model
+    Language identification service
     """
 
     # Any additional fields must be excluded for Pydantic to work
-    model: object = Field(exclude=True)
-    logger: object = Field(exclude=True)
+    languages: object = Field(exclude=True)
 
     def __init__(self):
         super().__init__(
             # TODO: 3. CHANGE THE SERVICE NAME AND SLUG
-            name="My Service",
-            slug="my-service",
+            name="Language identification",
+            slug="langid",
             url=settings.service_url,
             summary=api_summary,
             description=api_description,
             status=ServiceStatus.AVAILABLE,
             # TODO: 4. CHANGE THE INPUT AND OUTPUT FIELDS, THE TAGS AND THE HAS_AI VARIABLE
             data_in_fields=[
-                FieldDescription(name="image", type=[FieldDescriptionType.IMAGE_PNG, FieldDescriptionType.IMAGE_JPEG]),
+                FieldDescription(name="text", type=[FieldDescriptionType.TEXT_PLAIN]),
             ],
             data_out_fields=[
                 FieldDescription(name="result", type=[FieldDescriptionType.APPLICATION_JSON]),
             ],
             tags=[
                 ExecutionUnitTag(
-                    name=ExecutionUnitTagName.IMAGE_PROCESSING,
-                    acronym=ExecutionUnitTagAcronym.IMAGE_PROCESSING,
+                    name=ExecutionUnitTagName.NATURAL_LANGUAGE_PROCESSING,
+                    acronym=ExecutionUnitTagAcronym.NATURAL_LANGUAGE_PROCESSING,
                 ),
             ],
-            has_ai=False,
+            has_ai=True,
         )
-        self.logger = get_logger(settings)
+        # read the ai model here
+        self.languages = Languages()
+        model_files = os.listdir('trained_models')
+        n_models = len(model_files)
+        for i, filename in enumerate(model_files):
+            # print("Reading model from file [{}/{}]: {}".format(i + 1, n_models, filename))
+            self.languages.add_language_from_file(os.path.join('trained_models', filename))
+
 
     # TODO: 5. CHANGE THE PROCESS METHOD (CORE OF THE SERVICE)
     def process(self, data):
         # NOTE that the data is a dictionary with the keys being the field names set in the data_in_fields
-        raw = data["image"].data
-        input_type = data["image"].type
+        text = data["text"].data   
+        text = text.decode()     # we receive raw byte data - need to decode
+        # print(text)
+        input_type = data["text"].type
         # ... do something with the raw data
-
+        # perform identification
+        scores = self.languages.get_logllk_phrase(text, activate_dialects=True)
+        winner_id = self.languages.get_winner_lang_id(scores)
+        winner_lang = self.languages.get_language(winner_id)
+        # pack the answer as a dict that will be jsonified
+        answer = {}
+        answer.update(winner_lang.getDict()) # insert in dict answer the dict representing the winner language
+        answer.update({'score': scores[winner_id]}) # insert the winner score
         # NOTE that the result must be a dictionary with the keys being the field names set in the data_out_fields
         return {
             "result": TaskData(
-                data=...,
+                data=json.dumps(answer),    # convert to byte
                 type=FieldDescriptionType.APPLICATION_JSON
             )
         }
 
 
 # TODO: 6. CHANGE THE API DESCRIPTION AND SUMMARY
-api_description = """My service
-bla bla bla...
+api_description = """
+From a given input text, langid will identify the languages used in the text.
 """
-api_summary = """My service
-bla bla bla...
+api_summary = """
+Language identification from a text
 """
 
 # Define the FastAPI application with information
 # TODO: 7. CHANGE THE API TITLE, VERSION, CONTACT AND LICENSE
 app = FastAPI(
-    title="Sample Service API.",
+    title="Language Identification Service API.",
     description=api_description,
     version="0.0.1",
     contact={
         "name": "Swiss AI Center",
         "url": "https://swiss-ai-center.ch/",
-        "email": "info@swiss-ai-center.ch",
+        "email": "ia.recherche@hes-so.ch",
     },
     swagger_ui_parameters={
         "tagsSorter": "alpha",

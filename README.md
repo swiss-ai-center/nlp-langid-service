@@ -23,9 +23,10 @@ retrieve the probabilities. The computation time is only proportional to the len
 of the string and the number of languages in the model set, which is very much
 reasonable.
 
-## How to test locally the service?
+The list of languages that can be identified are in dir `src/trained_models` and 
+currently includes en, de, es, fr, it, nl, pl, pt, ru, tr and dialect de-CH.
 
-# How to test locally the service?
+## How to test locally the service?
 
 1. Create and activate the virtual environment:
 ```sh
