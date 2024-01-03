@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: langid-stateful
+  name: my-service-stateful
   labels:
-    app: langid
+    app: my-service
 spec:
-  serviceName: langid
+  serviceName: my-service
   replicas: 1
   selector:
     matchLabels:
-      app: langid
+      app: my-service
   template:
     metadata:
       labels:
-        app: langid
+        app: my-service
     spec:
       containers:
-      - name: langid
-        image: ghcr.io/organization/langid:latest
+      - name: my-service
+        image: ghcr.io/organization/my-service:latest
         # If you build the image locally, change the next line to `imagePullPolicy: Never` - there is no need to pull the image
         imagePullPolicy: Always
         ports:
@@ -25,4 +25,4 @@ spec:
           containerPort: 80
         envFrom:
           - configMapRef:
-              name: langid-config
+              name: my-service-config

@@ -1,22 +1,22 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: langid-ingress
+  name: my-service-ingress
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "16m"
     nginx.org/client-max-body-size: "16m"
 spec:
   rules:
-  - host: langid-swiss-ai-center.kube.isc.heia-fr.ch
+  - host: my-service.example.com
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: langid-service
+            name: my-service-service
             port:
               number: 80
   tls:
     - hosts:
-        - langid-swiss-ai-center.kube.isc.heia-fr.ch
+        - my-service.example.com

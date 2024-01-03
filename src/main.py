@@ -19,7 +19,6 @@ from common_code.common.enums import FieldDescriptionType, ExecutionUnitTagName,
 from common_code.common.models import FieldDescription, ExecutionUnitTag
 
 # Imports required by the service's model
-# TODO: 1. ADD REQUIRED IMPORTS (ALSO IN THE REQUIREMENTS.TXT)
 import os
 import json
 from model.Languages import Languages
@@ -28,24 +27,22 @@ settings = get_settings()
 
 
 class MyService(Service):
-    # TODO: 2. CHANGE THIS DESCRIPTION
     """
     Language identification service
     """
 
     # Any additional fields must be excluded for Pydantic to work
+    logger: object = Field(exclude=True)
     languages: object = Field(exclude=True)
 
     def __init__(self):
         super().__init__(
-            # TODO: 3. CHANGE THE SERVICE NAME AND SLUG
             name="Language identification",
             slug="langid",
             url=settings.service_url,
             summary=api_summary,
             description=api_description,
             status=ServiceStatus.AVAILABLE,
-            # TODO: 4. CHANGE THE INPUT AND OUTPUT FIELDS, THE TAGS AND THE HAS_AI VARIABLE
             data_in_fields=[
                 FieldDescription(name="text", type=[FieldDescriptionType.TEXT_PLAIN]),
             ],
@@ -60,22 +57,20 @@ class MyService(Service):
             ],
             has_ai=True,
         )
+        self.logger = get_logger(settings)
         # read the ai model here
         self.languages = Languages()
-        model_files = os.listdir('trained_models')
-        n_models = len(model_files)
+        model_files = os.listdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), "trained_models"))
+
         for i, filename in enumerate(model_files):
             # print("Reading model from file [{}/{}]: {}".format(i + 1, n_models, filename))
-            self.languages.add_language_from_file(os.path.join('trained_models', filename))
+            self.languages.add_language_from_file(
+                os.path.join(os.path.dirname(os.path.realpath(__file__)), "trained_models", filename))
 
-
-    # TODO: 5. CHANGE THE PROCESS METHOD (CORE OF THE SERVICE)
     def process(self, data):
         # NOTE that the data is a dictionary with the keys being the field names set in the data_in_fields
-        text = data["text"].data   
-        text = text.decode()     # we receive raw byte data - need to decode
-        # print(text)
-        input_type = data["text"].type
+        text = data["text"].data
+        text = text.decode()  # we receive raw byte data - need to decode
         # ... do something with the raw data
         # perform identification
         scores = self.languages.get_logllk_phrase(text, activate_dialects=True)
@@ -83,18 +78,17 @@ class MyService(Service):
         winner_lang = self.languages.get_language(winner_id)
         # pack the answer as a dict that will be jsonified
         answer = {}
-        answer.update(winner_lang.getDict()) # insert in dict answer the dict representing the winner language
-        answer.update({'score': scores[winner_id]}) # insert the winner score
+        answer.update(winner_lang.getDict())  # insert in dict answer the dict representing the winner language
+        answer.update({'score': scores[winner_id]})  # insert the winner score
         # NOTE that the result must be a dictionary with the keys being the field names set in the data_out_fields
         return {
             "result": TaskData(
-                data=json.dumps(answer),    # convert to byte
+                data=json.dumps(answer),  # convert to byte
                 type=FieldDescriptionType.APPLICATION_JSON
             )
         }
 
 
-# TODO: 6. CHANGE THE API DESCRIPTION AND SUMMARY
 api_description = """
 From a given input text, langid will identify the languages used in the text.
 """
@@ -103,7 +97,6 @@ Language identification from a text
 """
 
 # Define the FastAPI application with information
-# TODO: 7. CHANGE THE API TITLE, VERSION, CONTACT AND LICENSE
 app = FastAPI(
     title="Language Identification Service API.",
     description=api_description,
@@ -111,7 +104,7 @@ app = FastAPI(
     contact={
         "name": "Swiss AI Center",
         "url": "https://swiss-ai-center.ch/",
-        "email": "ia.recherche@hes-so.ch",
+        "email": "info@swiss-ai-center.ch",
     },
     swagger_ui_parameters={
         "tagsSorter": "alpha",
@@ -140,6 +133,7 @@ app.add_middleware(
 @app.get("/", include_in_schema=False)
 async def root():
     return RedirectResponse("/docs", status_code=301)
+
 
 service_service: ServiceService | None = None
 

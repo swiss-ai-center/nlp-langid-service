@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 from typing import Dict
 
+
 class Language():
     """
     A Language object stores a language id and a dictionary of ngram
@@ -13,6 +14,7 @@ class Language():
     german spoken in Switzerland. No verifications are done to verify this.
     The description field is the plain english version of the iso code.
     """
+
     def __init__(self, id: str, description: str = "EMPTY_DESCRIPTION"):
         self.id = id
         self.description = description
@@ -34,7 +36,7 @@ class Language():
         else:
             return self.default_log_lk_value  # pretty small log likelihood if not found
 
-    def compute_default_log_lk_value(self, verbosity : int = 0):
+    def compute_default_log_lk_value(self, verbosity: int = 0):
         '''compute the default log likelihood value as the smallest value in the ngrams'''
         smallest_log_lk = np.min([ngram.loglk for ngram in self.ngrams.values()])
         self.default_log_lk_value = smallest_log_lk
@@ -49,8 +51,8 @@ class Language():
 
     def getDict(self) -> Dict:
         return {
-            "langid":self.id,
-            "description":self.description
+            "langid": self.id,
+            "description": self.description
         }
 
     def is_dialect(self) -> bool:
@@ -70,11 +72,11 @@ class Language():
 
     def __str__(self):
         return "Language: id={} ".format(self.id) + \
-               "description={} ".format(self.description) + \
-               "nbr_ngrams={}".format(len(self.ngrams))
+            "description={} ".format(self.description) + \
+            "nbr_ngrams={}".format(len(self.ngrams))
 
     @staticmethod
-    def read_language_model(filename: str, verbosity : int = 0):
+    def read_language_model(filename: str, verbosity: int = 0):
         if not filename.endswith('.p'):
             filename = filename + '.p'
         if verbosity > 1:
@@ -89,6 +91,7 @@ class Language():
         testLanguage.addNgram(Ngram("bcd", -11.23))
         testLanguage.addNgram(Ngram("cde", -10.12))
         return testLanguage
+
 
 if __name__ == "__main__":
     test_language = Language.getTestLanguage()

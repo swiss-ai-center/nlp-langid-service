@@ -3,6 +3,7 @@ from model.Language import Language
 import numpy as np
 from typing import List, Dict
 
+
 class Languages():
     """
     A Languages object stores a set of languages in a dictionary
@@ -12,16 +13,16 @@ class Languages():
     def __init__(self):
         self.languages = {}
 
-    def addLanguage(self, language : Language):
+    def addLanguage(self, language: Language):
         self.languages[language.id] = language
 
     def get_language_ids(self) -> List[str]:
         return list(self.languages.keys())
 
-    def get_language(self, lang_id : str) -> Language :
+    def get_language(self, lang_id: str) -> Language:
         return self.languages[lang_id]
 
-    def get_loglk_ngram(self, langDesc : str, ngramDesc : str):
+    def get_loglk_ngram(self, langDesc: str, ngramDesc: str):
         if langDesc in self.languages:
             return self.languages[langDesc].getLoglkNgram(ngramDesc)
 
@@ -37,7 +38,7 @@ class Languages():
             # we compute for this language only if no list of lang is given
             # or if this language is in the passed lang_list
             if lang_list is None or language.id in lang_list:
-                if verbosity > 2 :
+                if verbosity > 2:
                     print("[{}]: ".format(language.id))
                 log_llk[language.id] = 0.0
                 for ngram in ngrams:
@@ -62,11 +63,11 @@ class Languages():
                 i += 1
         return log_llk
 
-    def get_winner_lang_id(self, scores : Dict[str, float]):
+    def get_winner_lang_id(self, scores: Dict[str, float]):
         tuple_list = [(value, key) for key, value in scores.items()]
         return max(tuple_list)[1]
 
-    def add_language_from_file(self, filename : str, verbosity : int = 0) -> Language:
+    def add_language_from_file(self, filename: str, verbosity: int = 0) -> Language:
         language = Language.read_language_model(filename, verbosity)
         self.addLanguage(language)
         if verbosity > 0:
@@ -96,9 +97,9 @@ class Languages():
         testLanguage2.addNgram(Ngram("cde", -15.67))
         testLanguages.addLanguage(testLanguage2)
         return testLanguages
-    
+
     @staticmethod
-    def phrase_to_ngram(phrase : str, n : int) -> List[str]:
+    def phrase_to_ngram(phrase: str, n: int) -> List[str]:
         """Returns a list of strings result of the slicing into
         sub-strings of length n. For example, phrase 'I eat the banana.'
         is converted with n=3 into ['I e', ' ea', 'eat', ..., 'na.'].

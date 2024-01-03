@@ -1,4 +1,3 @@
-
 class Ngram():
     """One Ngram object stores the id of the ngram (string) and
      the log-likelihood of the ngram.
@@ -10,8 +9,8 @@ class Ngram():
 
     def getDict(self):
         return {
-            "id":self.id,
-            "loglk":self.loglk
+            "id": self.id,
+            "loglk": self.loglk
         }
 
     def __str__(self):
@@ -21,7 +20,7 @@ class Ngram():
     def getTestNgram():
         return Ngram("abc", -12.34)
 
+
 if __name__ == "__main__":
     testNgram = Ngram.getTestNgram()
     print(testNgram)
-
