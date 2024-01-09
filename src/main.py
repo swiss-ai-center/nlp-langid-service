@@ -37,7 +37,7 @@ class MyService(Service):
 
     def __init__(self):
         super().__init__(
-            name="Language identification",
+            name="Language Identification",
             slug="langid",
             url=settings.service_url,
             summary=api_summary,
